@@ -3,7 +3,6 @@ package com.mcnz.auth;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-
 public class UserAccount {
     
     private String username;
