@@ -11,14 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-
-
-
 public class AuthController {
-
     
     private AuthService authService;
-
     
     public String register(
             String username,
@@ -26,7 +21,6 @@ public class AuthController {
 
         return authService.register(username, password);
     }
-
     
     public String login(
             String username,
