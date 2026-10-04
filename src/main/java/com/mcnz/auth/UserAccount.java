@@ -3,9 +3,9 @@ package com.mcnz.auth;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document("users")
+
 public class UserAccount {
-    @Id
+    
     private String username;
     private String passwordHash;
     private String roles;

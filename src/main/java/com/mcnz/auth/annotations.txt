@@ -1,0 +1,31 @@
+@ExceptionHandler(InvalidKeyException.class)
+@ExceptionHandler(SecurityException.class)
+@Size(min = 3, max = 50)
+@RestController
+@ExceptionHandler(JsonProcessingException.class)
+@ExceptionHandler(Exception.class)
+@NotBlank
+@Size(min = 3, max = 100)
+@Size(min = 3, max = 100)
+@Id
+@Document("users")
+@CrossOrigin(origins = "*")
+@Size(min = 3, max = 50)
+@ExceptionHandler(NoSuchAlgorithmException.class)
+@Autowired
+@Bean
+@PostMapping(value = "/login", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+@ExceptionHandler({IllegalStateException.class, DuplicateKeyException.class})
+@RestControllerAdvice
+@RequestParam
+@PostMapping(value = "/register", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+@SpringBootApplication
+@Autowired
+@NotBlank
+@NotBlank
+@RequestParam
+@RequestParam
+@NotBlank
+@ExceptionHandler(IllegalArgumentException.class)
+@RequestMapping("/auth")
+@RequestParam

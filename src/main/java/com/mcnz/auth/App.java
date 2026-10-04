@@ -18,18 +18,18 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-@RestControllerAdvice
-@SpringBootApplication
+
+
 public class App {
 
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);
     }
     
-    @Autowired
+    
     private UserAccountRepository users;
 
-    @Bean
+    
     CommandLineRunner seedAlice() {
         return args -> {
             if (!users.existsById("marcus")) {
@@ -47,37 +47,37 @@ public class App {
         };
     }
     
-    @ExceptionHandler(IllegalArgumentException.class)
+    
     public ProblemDetail handleBadRequest(IllegalArgumentException ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(SecurityException.class)
+    
     public ProblemDetail handleUnauthorized(SecurityException ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
-    @ExceptionHandler({IllegalStateException.class, DuplicateKeyException.class})
+    
     public ProblemDetail handleConflict(Exception ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(JsonProcessingException.class)
+    
     public ProblemDetail handleJsonProcessing(JsonProcessingException ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.INTERNAL_SERVER_ERROR, "Token serialization failed", request);
     }
 
-    @ExceptionHandler(InvalidKeyException.class)
+    
     public ProblemDetail handleInvalidKey(InvalidKeyException ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.INTERNAL_SERVER_ERROR, "Token signing failed due to invalid key", request);
     }
 
-    @ExceptionHandler(NoSuchAlgorithmException.class)
+    
     public ProblemDetail handleMissingAlgorithm(NoSuchAlgorithmException ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.INTERNAL_SERVER_ERROR, "Token signing failed due to missing algorithm", request);
     }
 
-    @ExceptionHandler(Exception.class)
+    
     public ProblemDetail handleUnexpected(Exception ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected server error", request);
     }
