@@ -1,0 +1,951 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cartel Control</title>
+  <link rel="stylesheet" href="https://cdn.lineicons.com/5.2/line/lineicons.css">
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: #0d1b2d;
+      --panel2: #11243b;
+      --border: #213a56;
+      --text: #eaf2ff;
+      --muted: #8fa6c0;
+      --accent: #4f8cff;
+      --accent2: #76a8ff;
+      --success: #2dd4a7;
+      --danger: #ff6b7a;
+      --warning: #f6c453;
+      --shadow: 0 18px 50px rgba(0,0,0,.28);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(79,140,255,.16), transparent 32rem),
+        radial-gradient(circle at 90% 15%, rgba(45,212,167,.08), transparent 26rem),
+        var(--bg);
+    }
+
+    button, input, textarea { font: inherit; }
+
+    .shell { width: min(1440px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 60px; }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-start;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent2);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    h1 { margin: 0 0 8px; font-size: clamp(30px, 5vw, 48px); letter-spacing: -.03em; }
+    h2, h3 { margin: 0; }
+    p { line-height: 1.55; }
+    .sub { margin: 0; color: var(--muted); max-width: 760px; }
+
+    .hero-status {
+      min-width: 250px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border: 1px solid var(--border);
+      background: rgba(13,27,45,.82);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .status-light {
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      flex: 0 0 13px;
+      background: #64748b;
+      box-shadow: 0 0 0 5px rgba(100,116,139,.12);
+    }
+    .status-light.online { background: var(--success); box-shadow: 0 0 0 5px rgba(45,212,167,.13), 0 0 18px rgba(45,212,167,.55); }
+    .status-light.offline { background: var(--danger); box-shadow: 0 0 0 5px rgba(255,107,122,.12), 0 0 18px rgba(255,107,122,.35); }
+    .status-light.checking { background: var(--warning); animation: pulse 1s infinite; }
+
+    .toolbar, .grid, .diagnostic-grid { display: grid; gap: 16px; }
+    .toolbar { grid-template-columns: 1.15fr .85fr; margin-bottom: 16px; }
+    .grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .diagnostic-grid { grid-template-columns: 1fr 1fr; margin-top: 16px; }
+
+    .card {
+      background: linear-gradient(180deg, rgba(17,36,59,.92), rgba(13,27,45,.95));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 17px 18px;
+      border-bottom: 1px solid rgba(33,58,86,.8);
+      background: rgba(255,255,255,.018);
+    }
+
+    .card-title { display: flex; gap: 10px; align-items: center; font-size: 16px; }
+    .card-title i { color: var(--accent2); font-size: 20px; }
+    .card-body { padding: 18px; }
+
+    label { display: block; margin: 12px 0 6px; font-size: 12px; font-weight: 700; color: #abc0d9; }
+    label:first-child { margin-top: 0; }
+
+    input, textarea {
+      width: 100%;
+      border: 1px solid #294765;
+      border-radius: 10px;
+      background: #081526;
+      color: var(--text);
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color .18s, box-shadow .18s, transform .18s;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,140,255,.12); }
+    textarea { min-height: 110px; resize: vertical; font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; }
+
+    .row { display: flex; gap: 10px; align-items: center; }
+    .row > * { min-width: 0; }
+    .grow { flex: 1; }
+    .button-row { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 13px;
+      cursor: pointer;
+      color: white;
+      font-weight: 800;
+      background: var(--accent);
+      transition: transform .16s ease, filter .16s ease, opacity .16s ease, box-shadow .16s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    button:hover { transform: translateY(-1px); filter: brightness(1.08); box-shadow: 0 8px 24px rgba(79,140,255,.18); }
+    button:active { transform: translateY(0) scale(.98); }
+    button:disabled { opacity: .55; cursor: wait; transform: none; }
+    button.secondary { background: #263f5b; }
+    button.ghost { background: transparent; border: 1px solid #31506f; color: #c9dbef; }
+    button.danger { background: #9f3344; }
+    button.small { padding: 7px 10px; font-size: 12px; }
+
+    .help, .tiny { color: var(--muted); }
+    .help { font-size: 12px; margin: 8px 0 0; }
+    .tiny { font-size: 11px; }
+
+    .server-list { display: grid; gap: 9px; margin-top: 14px; }
+    .server {
+      border: 1px solid #294765;
+      border-radius: 12px;
+      padding: 11px 12px;
+      background: #09182a;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      transition: border-color .2s, background .2s, transform .2s;
+    }
+    .server.active { border-color: var(--accent); background: rgba(79,140,255,.08); }
+    .server:hover { transform: translateY(-1px); }
+    .server-name { font-weight: 800; font-size: 13px; }
+    .server-url { color: var(--muted); font-size: 11px; word-break: break-all; margin-top: 2px; }
+    .server-actions { display: flex; gap: 6px; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 9px;
+      border-radius: 999px;
+      border: 1px solid #2d4c69;
+      background: #0a1728;
+      font-size: 11px;
+      color: #b9cbe0;
+    }
+
+    .token-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .metric {
+      background: #081526;
+      border: 1px solid #27445f;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .metric span { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 5px; }
+    .metric strong { font-size: 14px; word-break: break-word; }
+
+    pre {
+      margin: 0;
+      min-height: 120px;
+      max-height: 360px;
+      overflow: auto;
+      padding: 14px;
+      border-radius: 12px;
+      background: #06111f;
+      border: 1px solid #243f5b;
+      color: #d8e7f8;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font: 12px/1.55 "SFMono-Regular", Consolas, monospace;
+    }
+
+    .notice {
+      padding: 11px 12px;
+      border: 1px solid rgba(246,196,83,.34);
+      background: rgba(246,196,83,.07);
+      color: #efd987;
+      border-radius: 11px;
+      font-size: 12px;
+      margin-top: 12px;
+    }
+
+    .success-flash { animation: successFlash .75s ease; }
+    .error-shake { animation: errorShake .42s ease; }
+
+    .toast-stack {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      display: grid;
+      gap: 10px;
+      width: min(380px, calc(100% - 36px));
+      z-index: 99;
+    }
+    .toast {
+      border: 1px solid #2e4d6d;
+      background: #0c1b2e;
+      box-shadow: var(--shadow);
+      border-radius: 13px;
+      padding: 12px 14px;
+      display: flex;
+      gap: 11px;
+      align-items: flex-start;
+      animation: toastIn .24s ease both;
+    }
+    .toast.success { border-color: rgba(45,212,167,.45); }
+    .toast.error { border-color: rgba(255,107,122,.5); }
+    .toast-title { font-weight: 850; font-size: 13px; }
+    .toast-text { margin-top: 2px; color: var(--muted); font-size: 11px; }
+
+    .spinner {
+      width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.34);
+      border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite;
+    }
+
+    .kbd { font-family: monospace; font-size: 10px; color: #bcd0e6; border: 1px solid #34526e; padding: 2px 5px; border-radius: 5px; }
+    .divider { height: 1px; background: #223c58; margin: 16px 0; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 50% { opacity: .45; transform: scale(.86); } }
+    @keyframes successFlash {
+      0% { box-shadow: 0 0 0 0 rgba(45,212,167,.0); }
+      25% { box-shadow: 0 0 0 4px rgba(45,212,167,.26), 0 0 40px rgba(45,212,167,.24); }
+      100% { box-shadow: var(--shadow); }
+    }
+    @keyframes errorShake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-7px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(3px); }
+    }
+    @keyframes toastIn { from { opacity:0; transform: translateY(10px) scale(.98); } }
+
+    @media (max-width: 980px) {
+      .toolbar, .grid, .diagnostic-grid { grid-template-columns: 1fr; }
+      .token-summary { grid-template-columns: repeat(2, 1fr); }
+      .hero { flex-direction: column; }
+      .hero-status { width: 100%; }
+    }
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 18px, 1440px); padding-top: 16px; }
+      .server { grid-template-columns: auto 1fr; }
+      .server-actions { grid-column: 1 / -1; }
+      .token-summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <div class="eyebrow"><i class="lni lni-server-2" aria-hidden="true"></i> JWT learning console</div>
+        <h1>Cartel Control Dashboard</h1>
+        <p class="sub">Register, login, inspect JWTs, compare auth servers, and see exactly what the browser sends and receives. Designed for testing and teaching.</p>
+      </div>
+      <div class="hero-status">
+        <span id="activeStatusLight" class="status-light checking"></span>
+        <div>
+          <div class="tiny">ACTIVE AUTH SERVER</div>
+          <strong id="activeServerName">Checking…</strong>
+          <div id="activeServerReachability" class="tiny">Reachability unknown</div>
+        </div>
+      </div>
+    </header>
+
+    <section class="toolbar">
+      <article class="card" id="serversCard">
+        <div class="card-head">
+          <div class="card-title"><i class="lni lni-server-2" aria-hidden="true"></i><h2>Auth Servers</h2></div>
+          <button id="checkAllBtn" class="secondary small"><i class="lni lni-browser-refresh-anticlockwise"></i> Check all</button>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="grow">
+              <label for="serverName">Server name</label>
+              <input id="serverName" placeholder="Local auth">
+            </div>
+            <div class="grow">
+              <label for="serverUrl">Base URL</label>
+              <input id="serverUrl" value="http://localhost:3000/auth" placeholder="http://host:port/auth">
+            </div>
+            <div style="align-self:end">
+              <button id="addServerBtn"><span>＋</span> Add</button>
+            </div>
+          </div>
+          <p class="help">Servers are saved in this browser. The selected server is used by Register and Login.</p>
+          <div id="serverList" class="server-list"></div>
+          <div class="notice">
+            Reachability is checked on load and every 60 seconds. Because the supplied auth API has no health endpoint, this confirms browser/network reachability only—not database health or successful authentication.
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="card-head">
+          <div class="card-title"><i class="lni lni-globe-5" aria-hidden="true"></i><h2>Test Context</h2></div>
+          <span id="lastCheckPill" class="pill">No status check yet</span>
+        </div>
+        <div class="card-body">
+          <div class="tiny">Current endpoint</div>
+          <strong id="currentBaseUrl">http://localhost:3000/auth</strong>
+          <div class="divider"></div>
+          <div class="button-row">
+            <span class="pill">POST /register</span>
+            <span class="pill">POST /login</span>
+            <span class="pill">form-urlencoded</span>
+            <span class="pill">raw JWT response</span>
+          </div>
+          <div class="notice">
+            Your current Java controller exposes only <strong>/register</strong> and <strong>/login</strong>. “Local Logout” below only clears the browser copy of the JWT; it does not revoke an already-issued access token.
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section class="grid">
+      <article class="card" id="registerCard">
+        <div class="card-head">
+          <div class="card-title"><span>🧑‍🚀</span><h2>Register</h2></div>
+          <span class="pill">Creates user + JWT</span>
+        </div>
+        <div class="card-body">
+          <label for="regUser">Username</label>
+          <input id="regUser" autocomplete="username" placeholder="new-user">
+          <label for="regPass">Password</label>
+          <input id="regPass" type="password" autocomplete="new-password" placeholder="minimum 8 characters">
+          <div class="button-row">
+            <button id="registerBtn">Register</button>
+          </div>
+          <p class="help">On success the returned raw JWT is automatically loaded into Token Inspector.</p>
+        </div>
+      </article>
+
+      <article class="card" id="loginCard">
+        <div class="card-head">
+          <div class="card-title"><span>🔐</span><h2>Login</h2></div>
+          <span class="pill">Authenticates user</span>
+        </div>
+        <div class="card-body">
+          <label for="loginUser">Username</label>
+          <input id="loginUser" autocomplete="username" value="marcus" placeholder="alice">
+          <label for="loginPass">Password</label>
+          <input id="loginPass" type="password" autocomplete="current-password" value="abc123" placeholder="password">
+          <div class="button-row">
+            <button id="loginBtn">Login</button>
+            <button id="logoutBtn" class="danger">Local Logout</button>
+          </div>
+          <p class="help">Local Logout clears localStorage, sessionStorage, the page token, and the demo cookie. It does not call the auth server.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="diagnostic-grid">
+      <article class="card" id="tokenCard">
+        <div class="card-head">
+          <div class="card-title"><span>🔑</span><h2>Token Inspector</h2></div>
+          <div class="row">
+            <span id="claimModelPill" class="pill">Claim model: n/a</span>
+            <span id="tokenStatusPill" class="pill">No token</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="token-summary">
+            <div class="metric"><span>Subject</span><strong id="metricSubject">—</strong></div>
+            <div class="metric"><span>Age</span><strong id="metricAge">—</strong></div>
+            <div class="metric"><span>Time left</span><strong id="metricRemaining">—</strong></div>
+            <div class="metric"><span>Scope / Roles</span><strong id="metricRoles">—</strong></div>
+          </div>
+
+          <label for="tokenBox">Encoded JWT</label>
+          <textarea id="tokenBox" spellcheck="false" placeholder="A token returned by register/login appears here automatically."></textarea>
+          <div class="button-row">
+            <button id="inspectBtn">Inspect</button>
+            <button id="saveTokenBtn" class="secondary">Save locally</button>
+            <button id="clearTokenBtn" class="ghost">Clear token</button>
+          </div>
+
+          <label>Encoded parts</label>
+          <pre id="encodedOut">(no token)</pre>
+          <label>Decoded header + payload</label>
+          <pre id="decodedOut">(no token)</pre>
+          <p class="help">Decoding a JWT in the browser does <strong>not</strong> verify its signature. This console displays claims for learning; signature verification belongs on a trusted server/resource server.</p>
+        </div>
+      </article>
+
+      <article class="card" id="requestCard">
+        <div class="card-head">
+          <div class="card-title"><span>↔</span><h2>HTTP Exchange</h2></div>
+          <span id="requestDurationPill" class="pill">No request yet</span>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <label style="margin:0"><input id="showPasswords" type="checkbox" style="width:auto; margin-right:6px"> Show password in request diagnostics</label>
+          </div>
+          <label>Last request</label>
+          <pre id="requestOut">(no request yet)</pre>
+          <label>Last response</label>
+          <pre id="responseOut">(no response yet)</pre>
+          <div class="notice">
+            A failed browser request can mean the server is down, DNS/routing failed, mixed-content was blocked, or CORS prevented JavaScript from reading the response. The console reports the browser-visible result.
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <div id="toastStack" class="toast-stack" aria-live="polite"></div>
+
+  <script>
+  (() => {
+    "use strict";
+
+    const SERVERS_KEY = "missionAuthLabServersV2";
+    const ACTIVE_SERVER_KEY = "missionAuthLabActiveServerV2";
+    const TOKEN_KEY = "missionAuthLabAccessTokenV2";
+    const CHECK_INTERVAL_MS = 60000;
+
+    const $ = id => document.getElementById(id);
+    const els = {
+      serverName: $("serverName"), serverUrl: $("serverUrl"), serverList: $("serverList"),
+      checkAllBtn: $("checkAllBtn"), addServerBtn: $("addServerBtn"),
+      currentBaseUrl: $("currentBaseUrl"), activeServerName: $("activeServerName"),
+      activeStatusLight: $("activeStatusLight"), activeServerReachability: $("activeServerReachability"),
+      lastCheckPill: $("lastCheckPill"),
+      regUser: $("regUser"), regPass: $("regPass"), registerBtn: $("registerBtn"), registerCard: $("registerCard"),
+      loginUser: $("loginUser"), loginPass: $("loginPass"), loginBtn: $("loginBtn"), logoutBtn: $("logoutBtn"), loginCard: $("loginCard"),
+      tokenBox: $("tokenBox"), inspectBtn: $("inspectBtn"), saveTokenBtn: $("saveTokenBtn"), clearTokenBtn: $("clearTokenBtn"),
+      tokenStatusPill: $("tokenStatusPill"), claimModelPill: $("claimModelPill"), encodedOut: $("encodedOut"), decodedOut: $("decodedOut"),
+      metricSubject: $("metricSubject"), metricAge: $("metricAge"), metricRemaining: $("metricRemaining"), metricRoles: $("metricRoles"),
+      requestOut: $("requestOut"), responseOut: $("responseOut"), requestDurationPill: $("requestDurationPill"),
+      showPasswords: $("showPasswords"), toastStack: $("toastStack")
+    };
+
+    let servers = loadServers();
+    let activeServerId = localStorage.getItem(ACTIVE_SERVER_KEY) || servers[0].id;
+    let lastExchange = null;
+
+    function uid() {
+      return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random()).replace(/[^a-z0-9-]/gi, "");
+    }
+
+    function normalizeUrl(raw) {
+      const value = String(raw || "").trim().replace(/\/+$/, "");
+      if (!value) throw new Error("Server URL is required.");
+      const parsed = new URL(value);
+      if (!/^https?:$/.test(parsed.protocol)) throw new Error("Use an http:// or https:// URL.");
+      return value;
+    }
+
+    function loadServers() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(SERVERS_KEY));
+        if (Array.isArray(saved) && saved.length) return saved;
+      } catch (_) {}
+      return [{ id: uid(), name: "Local Auth", url: "http://localhost:3000/auth", status: "unknown", latency: null, checkedAt: null }];
+    }
+
+    function saveServers() {
+      localStorage.setItem(SERVERS_KEY, JSON.stringify(servers));
+      localStorage.setItem(ACTIVE_SERVER_KEY, activeServerId);
+    }
+
+    function getActiveServer() {
+      let server = servers.find(s => s.id === activeServerId);
+      if (!server) {
+        server = servers[0];
+        activeServerId = server.id;
+      }
+      return server;
+    }
+
+    function formatClock(ts) {
+      if (!ts) return "never";
+      return new Date(ts).toLocaleTimeString();
+    }
+
+    function renderServers() {
+      const active = getActiveServer();
+      els.currentBaseUrl.textContent = active.url;
+      els.activeServerName.textContent = active.name;
+
+      els.serverList.innerHTML = "";
+      for (const server of servers) {
+        const row = document.createElement("div");
+        row.className = "server" + (server.id === activeServerId ? " active" : "");
+
+        const light = document.createElement("span");
+        light.className = "status-light " + (server.status === "online" ? "online" : server.status === "offline" ? "offline" : server.status === "checking" ? "checking" : "");
+
+        const info = document.createElement("div");
+        const statusText =
+          server.status === "online" ? `Reachable${server.latency != null ? ` · ${server.latency} ms` : ""}` :
+          server.status === "offline" ? "Unreachable" :
+          server.status === "checking" ? "Checking…" : "Not checked";
+        info.innerHTML = `<div class="server-name">${escapeHtml(server.name)} ${server.id === activeServerId ? '<span class="tiny">• active</span>' : ''}</div>
+          <div class="server-url">${escapeHtml(server.url)}</div>
+          <div class="tiny">${statusText} · checked ${formatClock(server.checkedAt)}</div>`;
+
+        const actions = document.createElement("div");
+        actions.className = "server-actions";
+
+        const useBtn = document.createElement("button");
+        useBtn.className = "small secondary";
+        useBtn.textContent = server.id === activeServerId ? "Active" : "Use";
+        useBtn.disabled = server.id === activeServerId;
+        useBtn.onclick = () => {
+          activeServerId = server.id;
+          saveServers();
+          renderServers();
+          updateHeroStatus();
+          toast("success", "Active server changed", server.name);
+        };
+
+        const delBtn = document.createElement("button");
+        delBtn.className = "small ghost";
+        delBtn.textContent = "Remove";
+        delBtn.disabled = servers.length === 1;
+        delBtn.onclick = () => {
+          if (servers.length === 1) return;
+          servers = servers.filter(s => s.id !== server.id);
+          if (activeServerId === server.id) activeServerId = servers[0].id;
+          saveServers();
+          renderServers();
+          updateHeroStatus();
+        };
+
+        actions.append(useBtn, delBtn);
+        row.append(light, info, actions);
+        els.serverList.append(row);
+      }
+      updateHeroStatus();
+    }
+
+    function updateHeroStatus() {
+      const s = getActiveServer();
+      els.activeServerName.textContent = s.name;
+      els.currentBaseUrl.textContent = s.url;
+      els.activeStatusLight.className = "status-light " + (s.status === "online" ? "online" : s.status === "offline" ? "offline" : "checking");
+      els.activeServerReachability.textContent =
+        s.status === "online" ? `Browser reachable${s.latency != null ? ` · ${s.latency} ms` : ""}` :
+        s.status === "offline" ? "Browser cannot reach server" : "Reachability unknown";
+    }
+
+    async function checkServer(server) {
+      server.status = "checking";
+      renderServers();
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4500);
+      const started = performance.now();
+
+      try {
+        // no-cors intentionally checks network/browser reachability without requiring
+        // a dedicated health endpoint or readable CORS response.
+        await fetch(server.url + "/login?probe=" + Date.now(), {
+          method: "GET",
+          mode: "no-cors",
+          cache: "no-store",
+          signal: controller.signal
+        });
+        server.status = "online";
+        server.latency = Math.round(performance.now() - started);
+      } catch (err) {
+        server.status = "offline";
+        server.latency = null;
+      } finally {
+        clearTimeout(timer);
+        server.checkedAt = Date.now();
+        saveServers();
+      }
+    }
+
+    async function checkAllServers() {
+      setBusy(els.checkAllBtn, true, "Checking");
+      await Promise.all(servers.map(checkServer));
+      renderServers();
+      els.lastCheckPill.textContent = "Checked " + new Date().toLocaleTimeString();
+      setBusy(els.checkAllBtn, false);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    function toast(type, title, text) {
+      const node = document.createElement("div");
+      node.className = "toast " + type;
+      node.innerHTML = `<div>${type === "success" ? "✓" : "!"}</div><div><div class="toast-title">${escapeHtml(title)}</div><div class="toast-text">${escapeHtml(text || "")}</div></div>`;
+      els.toastStack.append(node);
+      setTimeout(() => node.remove(), 4200);
+    }
+
+    function animateResult(card, ok) {
+      card.classList.remove("success-flash", "error-shake");
+      void card.offsetWidth;
+      card.classList.add(ok ? "success-flash" : "error-shake");
+    }
+
+    function setBusy(button, busy, label) {
+      if (!button.dataset.originalText) button.dataset.originalText = button.innerHTML;
+      button.disabled = busy;
+      button.innerHTML = busy ? `<span class="spinner"></span>${escapeHtml(label || "Working")}` : button.dataset.originalText;
+    }
+
+    function safeJson(text) {
+      try { return JSON.parse(text); } catch (_) { return null; }
+    }
+
+    function pretty(value) {
+      return JSON.stringify(value, null, 2);
+    }
+
+    function decodeBase64Url(segment) {
+      const normalized = segment.replace(/-/g, "+").replace(/_/g, "/");
+      const padded = normalized + "=".repeat((4 - normalized.length % 4) % 4);
+      const bytes = Uint8Array.from(atob(padded), c => c.charCodeAt(0));
+      return new TextDecoder().decode(bytes);
+    }
+
+    function inspectJwt(token) {
+      const clean = String(token || "").trim();
+      const parts = clean.split(".");
+      if (!clean || parts.length !== 3) return { validShape: false, reason: "Expected header.payload.signature" };
+
+      try {
+        const headerText = decodeBase64Url(parts[0]);
+        const payloadText = decodeBase64Url(parts[1]);
+        const header = JSON.parse(headerText);
+        const payload = JSON.parse(payloadText);
+        const now = Math.floor(Date.now() / 1000);
+        const iat = typeof payload.iat === "number" ? payload.iat : null;
+        const exp = typeof payload.exp === "number" ? payload.exp : null;
+        const scope = typeof payload.scope === "string" ? payload.scope : null;
+        const roles = Array.isArray(payload.roles) ? payload.roles : null;
+        const claimModel = scope && roles ? "hybrid" : scope ? "scope-based" : roles ? "roles-array" : "unknown";
+
+        return {
+          validShape: true,
+          parts,
+          header,
+          payload,
+          scope,
+          roles,
+          claimModel,
+          iat,
+          exp,
+          now,
+          ageSeconds: iat == null ? null : now - iat,
+          remainingSeconds: exp == null ? null : exp - now,
+          expired: exp == null ? null : now >= exp
+        };
+      } catch (err) {
+        return { validShape: false, reason: "JWT could not be decoded: " + err.message };
+      }
+    }
+
+    function humanDuration(seconds) {
+      if (seconds == null || !Number.isFinite(seconds)) return "—";
+      const negative = seconds < 0;
+      let s = Math.abs(Math.floor(seconds));
+      const h = Math.floor(s / 3600); s %= 3600;
+      const m = Math.floor(s / 60); s %= 60;
+      const text = [h ? h + "h" : "", m ? m + "m" : "", s + "s"].filter(Boolean).join(" ");
+      return negative ? "-" + text : text;
+    }
+
+    function refreshTokenInspection() {
+      const info = inspectJwt(els.tokenBox.value);
+
+      if (!info.validShape) {
+        els.tokenStatusPill.textContent = els.tokenBox.value.trim() ? "Invalid JWT shape" : "No token";
+        els.claimModelPill.textContent = "Claim model: n/a";
+        els.metricSubject.textContent = els.metricAge.textContent = els.metricRemaining.textContent = els.metricRoles.textContent = "—";
+        els.encodedOut.textContent = els.tokenBox.value.trim() ? pretty(info) : "(no token)";
+        els.decodedOut.textContent = els.tokenBox.value.trim() ? pretty(info) : "(no token)";
+        return;
+      }
+
+      els.tokenStatusPill.textContent = info.expired === true ? "Expired" : info.expired === false ? "Active" : "Expiry unknown";
+      els.claimModelPill.textContent = "Claim model: " + info.claimModel;
+      els.metricSubject.textContent = info.payload.sub ?? "—";
+      els.metricAge.textContent = humanDuration(info.ageSeconds);
+      els.metricRemaining.textContent = humanDuration(info.remainingSeconds);
+      const rolesOrScope =
+        Array.isArray(info.roles) ? info.roles.join(", ") :
+        (typeof info.scope === "string" && info.scope.trim() ? info.scope : "—");
+      els.metricRoles.textContent = rolesOrScope;
+
+      els.encodedOut.textContent = pretty({
+        fullToken: els.tokenBox.value.trim(),
+        header: info.parts[0],
+        payload: info.parts[1],
+        signature: info.parts[2]
+      });
+
+      els.decodedOut.textContent = pretty({
+        header: info.header,
+        payload: info.payload,
+        calculated: {
+          nowEpochSeconds: info.now,
+          issuedAt: info.iat ? new Date(info.iat * 1000).toISOString() : null,
+          expiresAt: info.exp ? new Date(info.exp * 1000).toISOString() : null,
+          ageSeconds: info.ageSeconds,
+          remainingSeconds: info.remainingSeconds,
+          expired: info.expired
+        },
+        interpretedClaims: {
+          claimModel: info.claimModel,
+          subject: info.payload.sub ?? null,
+          audience: info.payload.aud ?? null,
+          issuer: info.payload.iss ?? null,
+          scope: info.scope,
+          roles: info.roles
+        }
+      });
+    }
+
+    function saveToken(token) {
+      const clean = String(token || "").trim();
+      localStorage.setItem(TOKEN_KEY, clean);
+      sessionStorage.setItem(TOKEN_KEY, clean);
+      document.cookie = "accessToken=" + encodeURIComponent(clean) + "; path=/; max-age=43200; SameSite=Lax";
+      els.tokenBox.value = clean;
+      refreshTokenInspection();
+    }
+
+    function clearToken() {
+      localStorage.removeItem(TOKEN_KEY);
+      sessionStorage.removeItem(TOKEN_KEY);
+      document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax";
+      els.tokenBox.value = "";
+      refreshTokenInspection();
+    }
+
+    function diagnosticForm(form) {
+      const copy = { ...form };
+      if (!els.showPasswords.checked && Object.prototype.hasOwnProperty.call(copy, "password")) copy.password = "•••••••• (hidden in diagnostics)";
+      return copy;
+    }
+
+    async function callAuth(path, form) {
+      const server = getActiveServer();
+      const url = server.url + path;
+      const body = new URLSearchParams(form);
+      const start = performance.now();
+
+      els.requestOut.textContent = pretty({
+        timestamp: new Date().toISOString(),
+        method: "POST",
+        url,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        form: diagnosticForm(form),
+        rawFormBody: els.showPasswords.checked ? body.toString() : "(hidden because it contains a password)"
+      });
+      els.responseOut.textContent = "Waiting for response…";
+
+      let response;
+      try {
+        response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body
+        });
+      } catch (err) {
+        const duration = Math.round(performance.now() - start);
+        els.requestDurationPill.textContent = duration + " ms · network error";
+        els.responseOut.textContent = pretty({
+          browserError: String(err),
+          durationMs: duration,
+          possibilities: ["server unreachable", "CORS blocked", "mixed-content blocked", "DNS/routing failure"]
+        });
+        throw err;
+      }
+
+      const text = await response.text();
+      const duration = Math.round(performance.now() - start);
+      const headers = {};
+      response.headers.forEach((value, key) => headers[key] = value);
+
+      lastExchange = { response, text, duration };
+      els.requestDurationPill.textContent = `${duration} ms · HTTP ${response.status}`;
+      els.responseOut.textContent = pretty({
+        timestamp: new Date().toISOString(),
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        durationMs: duration,
+        contentType: response.headers.get("content-type"),
+        headers,
+        body: text,
+        parsedJsonIfAny: safeJson(text)
+      });
+
+      if (!response.ok) {
+        const message = safeJson(text)?.detail || safeJson(text)?.message || text || response.statusText;
+        throw new Error(`HTTP ${response.status}: ${message}`);
+      }
+
+      return text.trim();
+    }
+
+    async function runAuthAction(kind) {
+      const isRegister = kind === "register";
+      const button = isRegister ? els.registerBtn : els.loginBtn;
+      const card = isRegister ? els.registerCard : els.loginCard;
+      const username = isRegister ? els.regUser.value.trim() : els.loginUser.value.trim();
+      const password = isRegister ? els.regPass.value : els.loginPass.value;
+
+      if (!username) {
+        animateResult(card, false);
+        toast("error", "Missing username", "Enter a username before sending the request.");
+        return;
+      }
+      if (!password) {
+        animateResult(card, false);
+        toast("error", "Missing password", "Enter a password before sending the request.");
+        return;
+      }
+
+      setBusy(button, true, isRegister ? "Registering" : "Logging in");
+      try {
+        const token = await callAuth(isRegister ? "/register" : "/login", { username, password });
+        saveToken(token);
+        animateResult(card, true);
+        toast("success", isRegister ? "Registration succeeded" : "Login succeeded", "The raw JWT response is now loaded in Token Inspector.");
+      } catch (err) {
+        animateResult(card, false);
+        toast("error", isRegister ? "Registration failed" : "Login failed", err.message);
+      } finally {
+        setBusy(button, false);
+      }
+    }
+
+    els.addServerBtn.addEventListener("click", async () => {
+      try {
+        const url = normalizeUrl(els.serverUrl.value);
+        const name = els.serverName.value.trim() || new URL(url).host;
+        if (servers.some(s => s.url.toLowerCase() === url.toLowerCase())) throw new Error("That server URL is already in the list.");
+        const server = { id: uid(), name, url, status: "unknown", latency: null, checkedAt: null };
+        servers.push(server);
+        activeServerId = server.id;
+        saveServers();
+        renderServers();
+        await checkServer(server);
+        renderServers();
+        toast(server.status === "online" ? "success" : "error", "Server added", server.status === "online" ? "Browser reachability check succeeded." : "Browser could not reach it.");
+      } catch (err) {
+        toast("error", "Could not add server", err.message);
+      }
+    });
+
+    els.checkAllBtn.addEventListener("click", checkAllServers);
+    els.registerBtn.addEventListener("click", () => runAuthAction("register"));
+    els.loginBtn.addEventListener("click", () => runAuthAction("login"));
+
+    els.logoutBtn.addEventListener("click", () => {
+      clearToken();
+      els.responseOut.textContent = pretty({
+        action: "LOCAL LOGOUT",
+        serverRequestSent: false,
+        cleared: ["localStorage token", "sessionStorage token", "accessToken demo cookie", "token textarea"],
+        warning: "The server-issued JWT itself was not revoked and another copy remains usable until expiration."
+      });
+      animateResult(els.loginCard, true);
+      toast("success", "Local logout complete", "Browser-held token data was cleared. No request was sent to the auth server.");
+    });
+
+    els.inspectBtn.addEventListener("click", refreshTokenInspection);
+    els.saveTokenBtn.addEventListener("click", () => {
+      saveToken(els.tokenBox.value);
+      toast("success", "Token saved", "Stored in localStorage, sessionStorage, and the demo cookie.");
+    });
+    els.clearTokenBtn.addEventListener("click", () => {
+      clearToken();
+      toast("success", "Token cleared", "The browser copy was removed.");
+    });
+
+    els.showPasswords.addEventListener("change", () => {
+      if (!lastExchange) return;
+      // Future exchanges will honor the changed diagnostics setting.
+      toast("success", "Diagnostic display changed", els.showPasswords.checked ? "Passwords will be shown in future request diagnostics." : "Passwords will be hidden in future request diagnostics.");
+    });
+
+    els.tokenBox.addEventListener("input", refreshTokenInspection);
+    [els.regUser, els.regPass].forEach(x => x.addEventListener("keydown", e => { if (e.key === "Enter") runAuthAction("register"); }));
+    [els.loginUser, els.loginPass].forEach(x => x.addEventListener("keydown", e => { if (e.key === "Enter") runAuthAction("login"); }));
+
+    const existing = localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY) || "";
+    if (existing) els.tokenBox.value = existing;
+
+    renderServers();
+    refreshTokenInspection();
+    checkAllServers();
+    setInterval(checkAllServers, CHECK_INTERVAL_MS);
+    setInterval(refreshTokenInspection, 1000);
+  })();
+  </script>
+</body>
+</html>
