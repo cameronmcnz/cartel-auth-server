@@ -19,38 +19,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
 public class JwtService {
-	
-    //private static final String UNENCODED_JWT_HEADER = """{"alg":"HS256","typ":"JWT"}""";
-    private static final String ENCODED_JWT_HEADER = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
-    private static final String JWT_SECRET = "marcus-the-worm-has-a-secret-plot-to-get-jimbo-james-out-of-jail";
 
-    public String issueAccessToken(String username, String roles) throws Exception {
-
-    	Map<String, Object> claims = new LinkedHashMap<>();
-
-    	claims.put("iss", "http://localhost:3000");
-        claims.put("aud", List.of("cartel-control"));
-    	claims.put("sub", username);
-        claims.put("scope", roles);
-        claims.put("iat", Instant.now().getEpochSecond());
-    	claims.put("exp", Instant.now().getEpochSecond() + 86400); 
-    	
-    	String unsignedHeaderAndClaims = ENCODED_JWT_HEADER + "." + encodeJson(claims);
-		String accessToken = unsignedHeaderAndClaims + "." + signed(unsignedHeaderAndClaims);
- 
-        return accessToken;
-    }
-
-    private String encodeJson(Object value) throws JsonProcessingException {
-    	    ObjectMapper objectMapper = new ObjectMapper();
-            byte[] json = objectMapper.writeValueAsBytes(value);
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(json);
-    }
-
-    private String signed(String value) throws NoSuchAlgorithmException, InvalidKeyException {
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(JWT_SECRET.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
-            byte[] signedTokenAsBytes = mac.doFinal(value.getBytes(StandardCharsets.UTF_8));
-            return Base64.getUrlEncoder().withoutPadding().encodeToString(signedTokenAsBytes);
-    }
+byte[] signedTokenAsBytes = mac.doFinal(value.getBytes(StandardCharsets.UTF_8));
+private String signed(String value) throws NoSuchAlgorithmException, InvalidKeyException
+claims.put("iat", Instant.now().getEpochSecond());
+private static final String ENCODED_JWT_HEADER = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9";
+ObjectMapper objectMapper = new ObjectMapper();
+return Base64.getUrlEncoder().withoutPadding().encodeToString(signedTokenAsBytes);
+Map<String, Object> claims = new LinkedHashMap<>();
+Mac mac = Mac.getInstance("HmacSHA256");
+public String issueAccessToken(String username, String roles) throws Exception
+private String encodeJson(Object value) throws JsonProcessingException
+return accessToken;
+claims.put("iss", "http://localhost:3000");
+claims.put("exp", Instant.now().getEpochSecond() + 86400);
+return Base64.getUrlEncoder().withoutPadding().encodeToString(json);
+//private static final String UNENCODED_JWT_HEADER = """"alg":"HS256","typ":"JWT"""";
+private static final String JWT_SECRET = "marcus-the-worm-has-a-secret-plot-to-get-jimbo-james-out-of-jail";
+String unsignedHeaderAndClaims = ENCODED_JWT_HEADER + "." + encodeJson(claims);
+claims.put("sub", username);
+claims.put("scope", roles);
+mac.init(new SecretKeySpec(JWT_SECRET.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
+byte[] json = objectMapper.writeValueAsBytes(value);
+claims.put("aud", List.of("cartel-control"));
+String accessToken = unsignedHeaderAndClaims + "." + signed(unsignedHeaderAndClaims);
 }
