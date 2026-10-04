@@ -18,18 +18,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
-
-
 public class App {
 
     public static void main(String[] args) {
         SpringApplication.run(App.class, args);
     }
     
-    
     private UserAccountRepository users;
 
-    
     CommandLineRunner seedAlice() {
         return args -> {
             if (!users.existsById("marcus")) {
@@ -47,36 +43,29 @@ public class App {
         };
     }
     
-    
     public ProblemDetail handleBadRequest(IllegalArgumentException ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
-    
     public ProblemDetail handleUnauthorized(SecurityException ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
-    
     public ProblemDetail handleConflict(Exception ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
-
     
     public ProblemDetail handleJsonProcessing(JsonProcessingException ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.INTERNAL_SERVER_ERROR, "Token serialization failed", request);
     }
 
-    
     public ProblemDetail handleInvalidKey(InvalidKeyException ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.INTERNAL_SERVER_ERROR, "Token signing failed due to invalid key", request);
     }
 
-    
     public ProblemDetail handleMissingAlgorithm(NoSuchAlgorithmException ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.INTERNAL_SERVER_ERROR, "Token signing failed due to missing algorithm", request);
     }
-
     
     public ProblemDetail handleUnexpected(Exception ex, HttpServletRequest request) {
         return buildProblem(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected server error", request);
